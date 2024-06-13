@@ -1,15 +1,17 @@
 {
-  "name": "react-native-device-info",
-  "version": "11.1.0",
+  "name": "@react-native-oh-tpl/react-native-device-info",
+  "version": "11.1.0-0.0.1",
   "description": "Get device information using react-native",
   "react-native": "src/index.ts",
   "types": "lib/typescript/index.d.ts",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
+  "source": "src/index.ts",
   "files": [
     "__tests__/",
     "android/",
     "ios/",
+    "/harmony",
     "lib/",
     "src/",
     "jest/",
@@ -134,5 +136,19 @@
       "module",
       "typescript"
     ]
+  },
+  "dependencies": {        
+    "react-native-device-info": "11.1.0"
+  },
+  "overrides": {
+    "@react-native/codegen": "0.74.0"
+  },
+  "harmony": {
+    "alias": "react-native-device-info",
+    "codegenConfig": {
+      "specPaths": [
+        "./src"
+      ]
+    }
   }
 }
