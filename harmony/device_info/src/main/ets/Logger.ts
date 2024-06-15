@@ -61,4 +61,4 @@ class Logger {
   }
 }
 
-export default new Logger('RNLocalize', 0xFF00, false)
+export default new Logger('RNDeviceInfo', 0xFF00, false)

@@ -1,7 +1,11 @@
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
-export interface Spec extends TurboModule {  
+export interface Spec extends TurboModule {
+    isEmulator(): Promise<boolean>;
+    isEmulatorSync(): boolean;
+    getMacAddress(): Promise<string>;
+    getMacAddressSync(): string;
     getApiLevel(): Promise<number>;
     getApiLevelSync(): number;
     getApplicationName(): string;
@@ -22,7 +26,7 @@ export interface Spec extends TurboModule {
     getCodenameSync(): string;
     getDevice(): Promise<string>;
     getDeviceSync(): string;
-    getDeviceId(): string; 
+    getDeviceId(): string;
     getDeviceName(): Promise<string>;
     getDeviceNameSync(): string;
     getDeviceType(): string;
@@ -44,8 +48,8 @@ export interface Spec extends TurboModule {
     getHostSync(): string;
     getIncremental(): Promise<string>;
     getIncrementalSync(): string;
-    getInstallerPackageName(): Promise<string>; 
-    getInstallerPackageNameSync(): string; 
+    getInstallerPackageName(): Promise<string>;
+    getInstallerPackageNameSync(): string;
     getInstanceId(): Promise<string>;
     getInstanceIdSync(): string;
     getIpAddress(): Promise<string>;
@@ -56,6 +60,7 @@ export interface Spec extends TurboModule {
     getManufacturerSync(): string;
     getModel(): string;
     getProduct(): Promise<string>;
+    getProductSync(): string;
     getReadableVersion(): string;
     getSecurityPatch(): Promise<string>;
     getSecurityPatchSync(): string;
@@ -69,6 +74,10 @@ export interface Spec extends TurboModule {
     getTotalDiskCapacityOld(): Promise<number>;
     getTotalDiskCapacitySync(): number;
     getTotalDiskCapacityOldSync(): number;
+    getTotalMemory(): Promise<number>;
+    getTotalMemorySync(): number;
+    isLowRamDevice(): Promise<boolean>;
+    getUsedMemory(): Promise<number>
     getType(): Promise<string>;
     getTypeSync(): string;
     getUniqueId(): Promise<string>;
@@ -86,12 +95,14 @@ export interface Spec extends TurboModule {
     isBatteryChargingSync(): boolean;
     isCameraPresent(): Promise<boolean>;
     isCameraPresentSync(): boolean;
-    isEmulator(): Promise<boolean>;
-    isEmulatorSync(): boolean;
     isHeadphonesConnected(): Promise<boolean>;
     isHeadphonesConnectedSync(): boolean;
-    isWiredHeadphonesConnected(): boolean;
-    isBluetoothHeadphonesConnected(): boolean;
+    isWiredHeadphonesConnected(): Promise<boolean>;
+    isWiredHeadphonesConnectedSync(): boolean;
+    isBluetoothHeadphonesConnected(): Promise<boolean>;
+    isBluetoothHeadphonesConnectedSync(): boolean;
+    isLandscape(): Promise<boolean>;
+    isLandscapeSync(): boolean;
     isLocationEnabled(): Promise<boolean>;
     isLocationEnabledSync(): boolean;
     isTablet(): boolean;
@@ -103,6 +114,8 @@ export interface Spec extends TurboModule {
     supportedAbisSync(): string[];
     getSupportedMediaTypeList(): Promise<string[]>;
     getSupportedMediaTypeListSync(): string[];
+    isEmulator(): Promise<boolean>;
+    isEmulatorSync(): boolean;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>("RNDeviceInfo");
