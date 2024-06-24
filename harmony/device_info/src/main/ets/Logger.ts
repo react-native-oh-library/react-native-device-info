@@ -51,7 +51,6 @@ class Logger {
   info(...args: string[]): void {
     hilog.info(this.domain, this.prefix, this.format, args);
   }
-
   warn(...args: string[]) : void {
     hilog.warn(this.domain, this.prefix, this.format, args);
   }
@@ -61,4 +60,4 @@ class Logger {
   }
 }
 
-export default new Logger('RNLocalize', 0xFF00, false)
+export default new Logger('RNDeviceInfo', 0xFF00, false)

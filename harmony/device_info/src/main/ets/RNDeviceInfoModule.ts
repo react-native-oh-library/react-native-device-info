@@ -38,6 +38,7 @@ import web_webview from '@ohos.web.webview'
 import media from '@ohos.multimedia.media';
 import { TurboModule, TurboModuleContext } from '@rnoh/react-native-openharmony/ts';
 import { TM } from '@rnoh/react-native-openharmony/generated/ts';
+import Logger from './Logger';
 
 const abiList32 = ["armeabi", "win_x86", "win_arm"];
 const abiList64 = ["arm64 v8", "Intel x86-64h Haswell", "arm64-v8a", "armeabi-v7a", "win_x64"];
@@ -63,15 +64,12 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     }
 
     getApiLevelSync(): number {
-        console.info('RNDeviceInfoModule getApiLevelSync')
         return deviceInfo.sdkApiVersion;
     }
 
     getApiLevel(): Promise<number> {
-        console.info('RNDeviceInfoModule getApiLevel')
         return new Promise<number>((resolve, reject) => {
             const data = this.getApiLevelSync();
-            console.info('RNDeviceInfoModule getApiLevel data:' + data)
             resolve(data);
         });
     }
@@ -86,7 +84,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
             }
         } catch (err) {
             let message = (err as BusinessError).message;
-            console.error(`getBundleInfoForSelfSync failed error message: ${message}.`);
+            Logger.error(`getBundleInfoForSelfSync failed error message: ${message}.`);
         }
         return result;
     }
@@ -94,7 +92,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     getBaseOs(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             const data = this.getBaseOsSync();
-            console.info('RNDeviceInfoModule getBaseOs data:' + data)
             resolve(data);
         });
     }
@@ -116,18 +113,17 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     getBootloader(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             const data = this.getBootloaderSync();
-            console.info('RNDeviceInfoModule getBootloader data:' + data)
             resolve(data);
         });
     }
 
     getBootloaderSync(): string {
-        console.info('RNDeviceInfoModule getBootloaderSync bootloaderVersion:' + deviceInfo.bootloaderVersion)
+        Logger.info('RNDeviceInfoModule getBootloaderSync bootloaderVersion:' + deviceInfo.bootloaderVersion)
         return deviceInfo.bootloaderVersion;
     }
 
     getBrand(): string {
-        console.info('RNDeviceInfoModule getBrand Brand:' + deviceInfo.brand)
+        Logger.info('RNDeviceInfoModule getBrand Brand:' + deviceInfo.brand)
         return deviceInfo.brand;
     }
 
@@ -146,13 +142,12 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         let result: string = "";
         try {
             let data = bundleManager.getBundleInfoForSelfSync(bundleFlags);
-            console.info('RNDeviceInfoModule getBuildNumber data:' + JSON.stringify(data))
             if (data) {
                 result = data.versionCode.toString();
             }
         } catch (err) {
             let message = (err as BusinessError).message;
-            console.error(`getBundleInfoForSelfSync aa failed error message: ${message}.`);
+            Logger.error(`getBundleInfoForSelfSync aa failed error message: ${message}.`);
         }
         return result;
     }
@@ -162,13 +157,12 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         let result: string = "";
         try {
             let data = bundleManager.getBundleInfoForSelfSync(bundleFlags);
-            console.info('RNDeviceInfoModule getBundleId data:' + JSON.stringify(data))
             if (data) {
                 result = data.versionCode.toString();
             }
         } catch (err) {
             let message = (err as BusinessError).message;
-            console.error(`getBundleInfoForSelfSync getBundleId failed error message: ${message}.`);
+            Logger.error(`getBundleInfoForSelfSync getBundleId failed error message: ${message}.`);
         }
 
         return result;
@@ -184,37 +178,30 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         let spn: string = "";
         try {
             spn = sim.getSimSpnSync(0);
-            console.info(`getCarrierSync the sim card spn is:` + spn);
         } catch (e) {
-            console.info(`getCarrierSync the sim card spn err:` + e.message);
+            Logger.info(`getCarrierSync the sim card spn err:` + e.message);
         }
         return spn;
     }
 
     getCodename(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            const data = this.getCodenameSync(); // osReleaseType osFullName
+            const data = this.getCodenameSync();
             resolve(data);
         });
     }
 
     getCodenameSync(): string {
-        console.info('RNDeviceInfoModule getCodenameSync data:' + deviceInfo.osReleaseType)
         return deviceInfo.osReleaseType;
     }
 
     getDevice(): Promise<string> {
-        console.info('RNDeviceInfoModule getApiLevel')
         return new Promise<string>((resolve, reject) => {
-            const data = deviceInfo.hardwareModel;
-            console.info('RNDeviceInfoModule getDevice data:' + data)
             resolve(deviceInfo.hardwareModel);
-
         });
     }
 
     getDeviceSync(): string {
-        console.info('RNDeviceInfoModule getCodenameSync data:' + deviceInfo.hardwareModel)
         return deviceInfo.hardwareModel;
     }
 
@@ -228,7 +215,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
 
     getDeviceNameSync(): string {
         let data = settings.getValueSync(this.context, settings.general.DEVICE_NAME, '');
-        console.info("RNDeviceInfoModule getDeviceNameSync data:" + JSON.stringify(data));
         return data;
     }
 
@@ -384,7 +370,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
             let info = wifiManager.getIpInfo();
             ipAddress = this.intToIP(info.ipAddress)
         } catch (error) {
-            console.error("failed:" + JSON.stringify(error));
+            Logger.error("failed:" + JSON.stringify(error));
         }
         return ipAddress;
     }
@@ -402,8 +388,8 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
 
     async getLastUpdateTime(): Promise<number> {
         let bundleFlags =
-            bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION; // | bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_METADATA;
-        let bundleInfo = await bundleManager.getBundleInfoForSelf(bundleFlags); //  .updateTime
+            bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION;
+        let bundleInfo = await bundleManager.getBundleInfoForSelf(bundleFlags);
         return bundleInfo.updateTime;
     }
 
@@ -417,7 +403,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
             }
         } catch (err) {
             let message = (err as BusinessError).message;
-            console.error(`getLastUpdateTimeSync failed error message: ${message}.`);
+            Logger.error(`getLastUpdateTimeSync failed error message: ${message}.`);
         }
         return result;
     }
@@ -445,16 +431,12 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     }
 
     getSecurityPatch(): Promise<string> {
-        console.info('RNDeviceInfoModule getSecurityPatch')
         return new Promise<string>((resolve, reject) => {
-            const data = deviceInfo.securityPatchTag;
-            console.info('RNDeviceInfoModule getSecurityPatch data:' + data)
             resolve(deviceInfo.securityPatchTag);
         });
     }
 
     getSecurityPatchSync(): string {
-        console.info('RNDeviceInfoModule getSecurityPatchSync data:' + deviceInfo.securityPatchTag)
         return deviceInfo.securityPatchTag;
     }
 
@@ -474,20 +456,17 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     }
 
     getSystemVersion(): string {
-        console.info('RNDeviceInfoModule getSystemVersion data:' + deviceInfo.osReleaseType)
         return deviceInfo.osReleaseType;
     }
 
     getTags(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             const data = this.getTagsSync();
-            console.info('RNDeviceInfoModule getTags data:' + data)
             resolve(data);
         });
     }
 
     getTagsSync(): string {
-        console.info('RNDeviceInfoModule getTagsSync data:' + deviceInfo.buildType)
         return deviceInfo.buildType;
     }
 
@@ -498,7 +477,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
 
     getTotalDiskCapacitySync(): number {
         let path = this.context?.filesDir;
-        console.info('RNDeviceInfoModule getTotalDiskCapacitySync data:' + statvfs.getTotalSizeSync(path))
         return statvfs.getTotalSizeSync(path);
     }
 
@@ -509,7 +487,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
 
     getTotalDiskCapacityOldSync(): number {
         let path = this.context?.filesDir;
-        console.info('RNDeviceInfoModule getTotalDiskCapacityOldSync data:' + statvfs.getTotalSizeSync(path))
         return statvfs.getTotalSizeSync(path);
     }
 
@@ -520,7 +497,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     }
 
     getTypeSync(): string {
-        console.info('RNDeviceInfoModule getTypeSync data:' + deviceInfo.buildType)
         return deviceInfo.buildType;
     }
 
@@ -538,7 +514,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     getUserAgent(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             const data = this.getUserAgentSync();
-            console.info('RNDeviceInfoModule getUserAgent data:' + data)
             resolve(data);
         });
     }
@@ -548,10 +523,9 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         let controller = new web_webview.WebviewController();
         try {
             userAgent = controller.getUserAgent();
-            console.log("userAgent: " + userAgent);
         } catch (error) {
             let e: BusinessError = error as BusinessError;
-            console.error(`getUserAgentSync ErrorCode: ${e.code},  Message: ${e.message}`);
+            Logger.error(`getUserAgentSync ErrorCode: ${e.code},  Message: ${e.message}`);
         }
         return userAgent;
     }
@@ -561,22 +535,20 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         let result: string = "";
         try {
             let data = bundleManager.getBundleInfoForSelfSync(bundleFlags);
-            console.info('RNDeviceInfoModule getVersion data:' + JSON.stringify(data))
             if (data) {
                 result = data.versionName;
             }
         } catch (err) {
             let message = (err as BusinessError).message;
-            console.error(`getVersion failed error message: ${message}.`);
+            Logger.error(`getVersion failed error message: ${message}.`);
         }
         return result;
     }
 
     hasGms(): Promise<boolean> {
-        console.info('RNDeviceInfoModule hasGms')
         return new Promise<boolean>((resolve, reject) => {
             const data = false;
-            console.info('RNDeviceInfoModule hasGms data:' + data)
+            Logger.info('RNDeviceInfoModule hasGms data:' + data)
             resolve(false);
         });
     }
@@ -644,14 +616,14 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
             cameraManager = camera.getCameraManager(this.context);
         } catch (error) {
             let err = error as BusinessError;
-            console.error(`The getCameraManager call failed. error code: ${err.code}`);
+            Logger.error(`The getCameraManager call failed. error code: ${err.code}`);
         }
         let cameras: Array<camera.CameraDevice> = [];
         try {
             cameras = cameraManager.getSupportedCameras();
         } catch (error) {
             let err = error as BusinessError;
-            console.error(`The getSupportedCameras call failed. error code: ${err.code}`);
+            Logger.error(`The getSupportedCameras call failed. error code: ${err.code}`);
         }
         if (cameras && cameras.length > 0) {
             return true;
@@ -663,7 +635,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         let audioManager = audio.getAudioManager();
         let audioRoutingManager = audioManager.getRoutingManager();
         let data = await audioRoutingManager.getDevices(audio.DeviceFlag.OUTPUT_DEVICES_FLAG);
-        console.info('isHeadphonesConnected data:' + JSON.stringify(data))
+        Logger.info('isHeadphonesConnected data:' + JSON.stringify(data))
         return null;
     }
 
@@ -672,7 +644,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         let audioManager = audio.getAudioManager();
         let audioRoutingManager = audioManager.getRoutingManager();
         audioRoutingManager.getDevices(audio.DeviceFlag.OUTPUT_DEVICES_FLAG).then((data) => {
-            console.info('getDevices Promise returned to indicate that the device list is obtained.');
+            Logger.info('getDevices Promise returned to indicate that the device list is obtained.');
         });
         return flag;
     }
@@ -688,10 +660,9 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     }
 
     isLocationEnabled(): Promise<boolean> {
-        console.info('RNDeviceInfoModule isLocationEnabled')
         return new Promise<boolean>((resolve, reject) => {
             const data = geoLocationManager.isLocationEnabled();
-            console.info('RNDeviceInfoModule isLocationEnabled data:' + data)
+            Logger.info('RNDeviceInfoModule isLocationEnabled data:' + data)
             resolve(geoLocationManager.isLocationEnabled());
         });
     }
@@ -700,9 +671,8 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         let locationEnabled = false;
         try {
             locationEnabled = geoLocationManager.isLocationEnabled();
-            console.info('isLocationEnabledSync locationEnabled:' + locationEnabled)
         } catch (err) {
-            console.error("isLocationEnabledSync errCode:" + (err).code + ",errMessage:" + (err).message);
+            Logger.error("isLocationEnabledSync errCode:" + (err).code + ",errMessage:" + (err).message);
         }
         return locationEnabled;
     }
@@ -714,7 +684,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     supported32BitAbis(): Promise<string[]> {
         return new Promise<string[]>((resolve, reject) => {
             const data = this.supported32BitAbisSync();
-            console.info('RNDeviceInfoModule supported32BitAbis data:' + data)
+            Logger.info('RNDeviceInfoModule supported32BitAbis data:' + data)
             resolve(data);
         });
     }
@@ -738,7 +708,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     supported64BitAbis(): Promise<string[]> {
         return new Promise<string[]>((resolve, reject) => {
             const data = this.supported64BitAbisSync();
-            console.info('RNDeviceInfoModule supported64BitAbis data:' + data)
+            Logger.info('RNDeviceInfoModule supported64BitAbis data:' + data)
             resolve(data);
         });
     }
@@ -760,10 +730,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     }
 
     supportedAbis(): Promise<string[]> {
-        console.info('RNDeviceInfoModule supportedAbis')
         return new Promise<string[]>((resolve, reject) => {
-            const data = deviceInfo.abiList;
-            console.info('RNDeviceInfoModule supportedAbis data:' + data)
             resolve([deviceInfo.abiList]);
         });
     }
@@ -775,7 +742,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     getSupportedMediaTypeList(): Promise<string[]> {
         return new Promise<string[]>((resolve, reject) => {
             const data = this.getSupportedMediaTypeListSync();
-            console.info('RNDeviceInfoModule getSupportedMediaTypeList data:' + data)
+            Logger.info('RNDeviceInfoModule getSupportedMediaTypeList data:' + data)
             resolve(data);
         });
     }
