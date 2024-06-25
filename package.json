@@ -9,8 +9,6 @@
   "source": "src/index.ts",
   "files": [
     "__tests__/",
-    "android/",
-    "ios/",
     "/harmony",
     "lib/",
     "src/",
@@ -61,8 +59,6 @@
   "keywords": [
     "react-component",
     "react-native",
-    "ios",
-    "android",
     "windows",
     "device",
     "events",
