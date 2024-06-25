@@ -29,24 +29,19 @@ import { RNDeviceInfoModule } from './RNDeviceInfoModule';
 
 class RNDeviceInfoModulesFactory extends TurboModulesFactory {
   createTurboModule(name: string): TurboModule | null {
-    console.info('test zyx RNDeviceInfoModulesFactory createTurboModule name:'+name)
     if (name === TM.RNDeviceInfo.NAME) {
-      console.info('test zyx RNDeviceInfoModulesFactory createTurboModule 1');
       return new RNDeviceInfoModule(this.ctx);
     }
-    console.info('test zyx RNDeviceInfoModulesFactory createTurboModule 2');
     return null;
   }
 
   hasTurboModule(name: string): boolean {
-    console.info('test zyx RNDeviceInfoModulesFactory hasTurboModule name:'+name+',RNDeviceInfo:'+TM.RNDeviceInfo.NAME);
     return name === TM.RNDeviceInfo.NAME;
   }
 }
 
 export class RNDeviceInfoPackage extends RNPackage {
   createTurboModulesFactory(ctx: TurboModuleContext): TurboModulesFactory {
-    console.info('test zyx RNDeviceInfoModulesFactory RNDeviceInfoPackage');
     return new RNDeviceInfoModulesFactory(ctx);
   }
 }
