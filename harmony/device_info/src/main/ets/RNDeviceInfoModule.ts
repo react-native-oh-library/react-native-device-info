@@ -34,11 +34,16 @@ import statvfs from '@ohos.file.statvfs';
 import geoLocationManager from '@ohos.geoLocationManager';
 import { common } from '@kit.AbilityKit';
 import wifiManager from '@ohos.wifiManager';
-import web_webview from '@ohos.web.webview'
+import web_webview from '@ohos.web.webview';
 import media from '@ohos.multimedia.media';
 import { TurboModule, TurboModuleContext } from '@rnoh/react-native-openharmony/ts';
 import { TM } from '@rnoh/react-native-openharmony/generated/ts';
+import resourceManager from '@ohos.resourceManager';
+import appManager from '@ohos.app.ability.appManager';
+import { inputDevice } from '@kit.InputKit';
+import power from '@ohos.power';
 import Logger from './Logger';
+import screenLock from '@ohos.screenLock';
 
 const abiList32 = ["armeabi", "win_x86", "win_arm"];
 const abiList64 = ["arm64 v8", "Intel x86-64h Haswell", "arm64-v8a", "armeabi-v7a", "win_x64"];
@@ -164,7 +169,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
             let message = (err as BusinessError).message;
             Logger.error(`getBundleInfoForSelfSync getBundleId failed error message: ${message}.`);
         }
-
         return result;
     }
 
@@ -173,7 +177,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
             resolve(this.getCarrierSync());
         });
     }
-    
+
     getCarrierSync(): string {
         let spn: string = "";
         try {
@@ -197,16 +201,16 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
 
     getDevice(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            resolve(deviceInfo.hardwareModel);
+            resolve(this.getDeviceSync());
         });
     }
 
     getDeviceSync(): string {
-        return deviceInfo.hardwareModel;
+        return deviceInfo.productModel;
     }
 
     getDeviceId(): string {
-        return deviceInfo.productModel;
+        return deviceInfo.udid;
     }
 
     getDeviceName(): Promise<string> {
@@ -234,7 +238,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
 
     getFingerprint(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            const data = deviceInfo.versionId;
             resolve(this.getFingerprintSync());
         });
     }
@@ -245,10 +248,9 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         return data.versionCode.toString();
     }
 
-    async getFirstInstallTime(): Promise<number> {
+    getFirstInstallTime(): Promise<number> {
         return new Promise<number>((resolve, reject) => {
-            const data = this.getFirstInstallTimeSync();
-            resolve(data);
+            resolve(this.getFirstInstallTimeSync());
         });
     }
 
@@ -281,15 +283,13 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     }
 
     getFreeDiskStorage(): Promise<number> {
-        let context = this.context;
-        let path = context?.filesDir;
-        return statvfs.getFreeSize(path);
+        return new Promise<number>(async (resolve, reject) => {
+            resolve(this.getFreeDiskStorageSync());
+        });
     }
 
     getFreeDiskStorageSync(): number {
-        let path = "/dev";
-        let size = statvfs.getFreeSizeSync(path);
-        return size;
+        return statvfs.getFreeSizeSync(this.context?.filesDir)
     }
 
     getFreeDiskStorageOld(): Promise<number> {
@@ -314,7 +314,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         return deviceInfo.hardwareModel;
     }
 
-    // getValue  只在FA模式下可用
     getHost(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             resolve(this.getHostSync());
@@ -334,7 +333,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     getIncrementalSync(): string {
         return deviceInfo.incrementalVersion;
     }
-    
+
     getInstallerPackageName(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             resolve(this.getInstallerPackageNameSync());
@@ -386,11 +385,11 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         return str;
     }
 
-    async getLastUpdateTime(): Promise<number> {
-        let bundleFlags =
-            bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION;
-        let bundleInfo = await bundleManager.getBundleInfoForSelf(bundleFlags);
-        return bundleInfo.updateTime;
+    getLastUpdateTime(): Promise<number> {
+        return new Promise<number>((resolve, reject) => {
+            resolve(this.getLastUpdateTimeSync());
+        });
+        ;
     }
 
     getLastUpdateTimeSync(): number {
@@ -423,7 +422,13 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     }
 
     getProduct(): Promise<string> {
-        return settings.getValue(this.context, settings.general.DEVICE_NAME);
+        return new Promise<string>((resolve, reject) => {
+            resolve(deviceInfo.productSeries);
+        });
+    }
+
+    getProductSync(): string {
+        return deviceInfo.productSeries
     }
 
     getReadableVersion(): string {
@@ -513,8 +518,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
 
     getUserAgent(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            const data = this.getUserAgentSync();
-            resolve(data);
+            resolve(this.getUserAgentSync());
         });
     }
 
@@ -631,32 +635,68 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         return false;
     }
 
-    async isHeadphonesConnected(): Promise<boolean> {
-        let audioManager = audio.getAudioManager();
-        let audioRoutingManager = audioManager.getRoutingManager();
-        let data = await audioRoutingManager.getDevices(audio.DeviceFlag.OUTPUT_DEVICES_FLAG);
-        Logger.info('isHeadphonesConnected data:' + JSON.stringify(data))
-        return null;
+    isHeadphonesConnected(): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.isHeadphonesConnectedSync());
+        });
     }
 
     isHeadphonesConnectedSync(): boolean {
-        let flag = false;
+        let isHeadphonesConnected = false
         let audioManager = audio.getAudioManager();
         let audioRoutingManager = audioManager.getRoutingManager();
-        audioRoutingManager.getDevices(audio.DeviceFlag.OUTPUT_DEVICES_FLAG).then((data) => {
-            Logger.info('getDevices Promise returned to indicate that the device list is obtained.');
+        let data = audioRoutingManager.getDevicesSync(audio.DeviceFlag.OUTPUT_DEVICES_FLAG);
+        if (!!data && data.length > 0) {
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].deviceType == audio.DeviceType.WIRED_HEADSET ||
+                    data[i].deviceType == audio.DeviceType.BLUETOOTH_A2DP) {
+                    isHeadphonesConnected = true
+                }
+            }
+        }
+        return isHeadphonesConnected;
+    }
+
+    isWiredHeadphonesConnected(): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.isWiredHeadphonesConnectedSync());
         });
-        return flag;
     }
 
-    isWiredHeadphonesConnected(): boolean {
-        let flag = false;
-        return flag;
+    isWiredHeadphonesConnectedSync(): boolean {
+        let isWiredHeadphonesConnected = false
+        let audioManager = audio.getAudioManager();
+        let audioRoutingManager = audioManager.getRoutingManager();
+        let data = audioRoutingManager.getDevicesSync(audio.DeviceFlag.OUTPUT_DEVICES_FLAG);
+        if (!!data && data.length > 0) {
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].deviceType == audio.DeviceType.WIRED_HEADSET) {
+                    isWiredHeadphonesConnected = true
+                }
+            }
+        }
+        return isWiredHeadphonesConnected;
     }
 
-    isBluetoothHeadphonesConnected(): boolean {
-        let flag = false;
-        return flag;
+    isBluetoothHeadphonesConnected(): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.isBluetoothHeadphonesConnectedSync());
+        });
+    }
+
+    isBluetoothHeadphonesConnectedSync(): boolean {
+        let isBluetoothHeadphonesConnected = false
+        let audioManager = audio.getAudioManager();
+        let audioRoutingManager = audioManager.getRoutingManager();
+        let data = audioRoutingManager.getDevicesSync(audio.DeviceFlag.OUTPUT_DEVICES_FLAG);
+        if (!!data && data.length > 0) {
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].deviceType == audio.DeviceType.BLUETOOTH_A2DP) {
+                    isBluetoothHeadphonesConnected = true
+                }
+            }
+        }
+        return isBluetoothHeadphonesConnected;
     }
 
     isLocationEnabled(): Promise<boolean> {
@@ -683,9 +723,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
 
     supported32BitAbis(): Promise<string[]> {
         return new Promise<string[]>((resolve, reject) => {
-            const data = this.supported32BitAbisSync();
-            Logger.info('RNDeviceInfoModule supported32BitAbis data:' + data)
-            resolve(data);
+            resolve(this.supported32BitAbisSync());
         });
     }
 
@@ -741,9 +779,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
 
     getSupportedMediaTypeList(): Promise<string[]> {
         return new Promise<string[]>((resolve, reject) => {
-            const data = this.getSupportedMediaTypeListSync();
-            Logger.info('RNDeviceInfoModule getSupportedMediaTypeList data:' + data)
-            resolve(data);
+            resolve(this.getSupportedMediaTypeListSync());
         });
     }
 
