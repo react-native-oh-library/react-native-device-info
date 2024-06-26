@@ -56,18 +56,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         this.context = ctx?.uiAbilityContext;
     }
 
-    getMacAddress(): Promise<string> {
-        throw new Error('Method not implemented.');
-    }
-
-    isEmulator(): Promise<boolean> {
-        throw new Error('Method not implemented.');
-    }
-
-    isEmulatorSync(): boolean {
-        throw new Error('Method not implemented.');
-    }
-
     getApiLevelSync(): number {
         return deviceInfo.sdkApiVersion;
     }
@@ -92,6 +80,27 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
             Logger.error(`getBundleInfoForSelfSync failed error message: ${message}.`);
         }
         return result;
+    }
+
+    getAvailableLocationProviders(): Promise<Object> {
+        return new Promise<Object>((resolve, reject) => {
+            resolve(this.getAvailableLocationProvidersSync());
+        });
+    }
+
+    getAvailableLocationProvidersSync(): Object {
+        let obj = {
+            gps: false
+        };
+
+        try {
+            let locationEnabled = geoLocationManager.isLocationEnabled();
+            obj.gps = locationEnabled;
+        } catch (err) {
+            Logger.error("getAvailableLocationProvidersSync errCode:" + (err).code + ",errMessage:" +
+            (err).message);
+        }
+        return obj;
     }
 
     getBaseOs(): Promise<string> {
@@ -123,12 +132,10 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     }
 
     getBootloaderSync(): string {
-        Logger.info('RNDeviceInfoModule getBootloaderSync bootloaderVersion:' + deviceInfo.bootloaderVersion)
         return deviceInfo.bootloaderVersion;
     }
 
     getBrand(): string {
-        Logger.info('RNDeviceInfoModule getBrand Brand:' + deviceInfo.brand)
         return deviceInfo.brand;
     }
 
@@ -417,6 +424,43 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         return deviceInfo.manufacture;
     }
 
+    getPowerState(): Promise<Object> {
+        return new Promise<Object>((resolve, reject) => {
+            resolve(this.getPowerStateSync());
+        });
+    }
+
+    getPowerStateSync(): Object {
+        let batterySOC = batteryInfo.batterySOC;
+        let chargingStatus = batteryInfo.chargingStatus;
+        let batteryState: string = "unknown";
+        if (chargingStatus == batteryInfo.BatteryChargeState.NONE ||
+            chargingStatus == batteryInfo.BatteryChargeState.DISABLE) {
+            batteryState = "unplugged";
+        } else if (chargingStatus == batteryInfo.BatteryChargeState.ENABLE) {
+            batteryState = "charging";
+        } else if (chargingStatus == batteryInfo.BatteryChargeState.FULL) {
+            batteryState = "full";
+        }
+
+        let lowPowerMode = false;
+        try {
+            let mode = power.getPowerMode();
+            if (mode == power.DevicePowerMode.MODE_POWER_SAVE || power.DevicePowerMode.MODE_EXTREME_POWER_SAVE) {
+                lowPowerMode = true;
+            }
+            Logger.info('power mode: ' + mode);
+        } catch (err) {
+            Logger.error('get power mode failed, err: ' + err);
+        }
+        let data = {
+            batteryLevel: batterySOC,
+            batteryState: batteryState,
+            lowPowerMode: lowPowerMode
+        }
+        return JSON.stringify(data);
+    }
+
     getModel(): string {
         return deviceInfo.productModel;
     }
@@ -464,17 +508,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         return deviceInfo.osReleaseType;
     }
 
-    getTags(): Promise<string> {
-        return new Promise<string>((resolve, reject) => {
-            const data = this.getTagsSync();
-            resolve(data);
-        });
-    }
-
-    getTagsSync(): string {
-        return deviceInfo.buildType;
-    }
-
     getTotalDiskCapacity(): Promise<number> {
         let path = this.context?.filesDir;
         return statvfs.getTotalSize(path);
@@ -493,6 +526,24 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     getTotalDiskCapacityOldSync(): number {
         let path = this.context?.filesDir;
         return statvfs.getTotalSizeSync(path);
+    }
+
+    getTotalMemory(): Promise<number> {
+        let path = this.context?.filesDir;
+        return statvfs.getTotalSize(path)
+    }
+
+    getTotalMemorySync(): number {
+        let path = this.context?.filesDir;
+        return statvfs.getTotalSizeSync(path)
+    }
+
+    isLowRamDevice(): Promise<boolean> {
+        return appManager.isRamConstrainedDevice()
+    }
+
+    getUsedMemory(): Promise<number> {
+        return appManager.getAppMemorySize()
     }
 
     getType(): Promise<string> {
@@ -551,8 +602,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
 
     hasGms(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            const data = false;
-            Logger.info('RNDeviceInfoModule hasGms data:' + data)
             resolve(false);
         });
     }
@@ -585,6 +634,68 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
             flag = true;
         }
         return flag;
+    }
+
+    isKeyboardConnected(): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.isKeyboardConnectedSync());
+        });
+    }
+
+    isKeyboardConnectedSync(): boolean {
+        let isKeyboardConnected = false
+        try {
+            inputDevice.getDeviceList().then((ids) => {
+                if (!!ids && ids.length > 0) {
+                    for (let i = 0; i < ids.length; i++) {
+                        inputDevice.getDeviceInfo(ids[i]).then((deviceData) => {
+                            if (!!deviceData && !!deviceData.sources) {
+                                let sourceTypes = deviceData.sources
+                                for (let j = 0; j < sourceTypes.length; j++) {
+                                    if (sourceTypes[i] == "keyboard") {
+                                        isKeyboardConnected = true
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+                return isKeyboardConnected
+            });
+        } catch (error) {
+            return false
+        }
+    }
+
+    isMouseConnected(): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.isMouseConnectedSync());
+        });
+    }
+
+    isMouseConnectedSync(): boolean {
+        let isKeyboardConnected = false
+        try {
+            inputDevice.getDeviceList().then((ids) => {
+                if (!!ids && ids.length > 0) {
+                    for (let i = 0; i < ids.length; i++) {
+                        inputDevice.getDeviceInfo(ids[i]).then((deviceData) => {
+                            if (!!deviceData && !!deviceData.sources) {
+                                let sourceTypes = deviceData.sources
+                                for (let j = 0; j < sourceTypes.length; j++) {
+                                    if (sourceTypes[i] == "mouse") {
+                                        isKeyboardConnected = true
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+            return isKeyboardConnected
+        } catch (error) {
+            return false
+        }
     }
 
     isBatteryCharging(): Promise<boolean> {
@@ -699,10 +810,21 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         return isBluetoothHeadphonesConnected;
     }
 
+
+    isLandscape(): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.isLandscapeSync());
+        });
+    }
+
+    isLandscapeSync(): boolean {
+        return this.context.resourceManager.getConfigurationSync().direction ==
+        resourceManager.Direction.DIRECTION_HORIZONTAL
+    }
+
+
     isLocationEnabled(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            const data = geoLocationManager.isLocationEnabled();
-            Logger.info('RNDeviceInfoModule isLocationEnabled data:' + data)
             resolve(geoLocationManager.isLocationEnabled());
         });
     }
@@ -715,6 +837,10 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
             Logger.error("isLocationEnabledSync errCode:" + (err).code + ",errMessage:" + (err).message);
         }
         return locationEnabled;
+    }
+
+    isPinOrFingerprintSet(): Promise<boolean> {
+        return screenLock.isSecureMode()
     }
 
     isTablet(): boolean {
@@ -746,7 +872,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     supported64BitAbis(): Promise<string[]> {
         return new Promise<string[]>((resolve, reject) => {
             const data = this.supported64BitAbisSync();
-            Logger.info('RNDeviceInfoModule supported64BitAbis data:' + data)
             resolve(data);
         });
     }
