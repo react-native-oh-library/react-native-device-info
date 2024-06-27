@@ -44,6 +44,19 @@ yarn add @react-native-oh-tpl/react-native-device-info@file:#
 
 > [!WARNING] 使用时 import 的库名不变。
 
+在entry/src/main/module.json5中添加权限
+
+```js
+"requestPermissions": [
+  {
+    "name": "ohos.permission.GET_NETWORK_INFO"
+  },
+  {
+    "name": "ohos.permission.GET_WIFI_INFO"
+  }
+]
+```
+
 ```js
 import DeviceInfo from 'react-native-device-info';
   DeviceInfo.getBundleId();
