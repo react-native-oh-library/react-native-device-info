@@ -1,6 +1,6 @@
 {
   "name": "@react-native-oh-tpl/react-native-device-info",
-  "version": "11.1.0-0.0.1",
+  "version": "11.1.0-0.0.2",
   "description": "Get device information using react-native",
   "react-native": "src/index.ts",
   "types": "lib/typescript/index.d.ts",
