@@ -54,6 +54,7 @@ export interface Spec extends TurboModule {
     getIpAddressSync(): string;
     getLastUpdateTime(): Promise<number>;
     getLastUpdateTimeSync(): number;
+    getMacAddress(): Promise<string>;
     getManufacturer(): Promise<string>;
     getManufacturerSync(): string;
     getPowerState(): Promise<Object>;
@@ -87,6 +88,7 @@ export interface Spec extends TurboModule {
     hasGmsSync(): boolean;
     hasHms(): Promise<boolean>;
     hasHmsSync(): boolean;
+    hasNotch():Promise<boolean>;
     isAirplaneMode(): Promise<boolean>;
     isAirplaneModeSync(): boolean;
     isKeyboardConnected(): Promise<boolean>;
