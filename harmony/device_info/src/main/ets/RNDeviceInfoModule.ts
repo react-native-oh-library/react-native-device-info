@@ -44,6 +44,7 @@ import { inputDevice } from '@kit.InputKit';
 import power from '@ohos.power';
 import Logger from './Logger';
 import screenLock from '@ohos.screenLock';
+import { AAID } from '@kit.PushKit';
 import { display } from '@kit.ArkUI'
 
 const abiList32 = ["armeabi", "win_x86", "win_arm"];
@@ -464,7 +465,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
             batteryState: batteryState,
             lowPowerMode: lowPowerMode
         }
-        return JSON.stringify(data);
+        return data;
     }
 
     getModel(): string {
@@ -563,9 +564,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     }
 
     getUniqueId(): Promise<string> {
-        return new Promise<string>((resolve, reject) => {
-            resolve(this.getUniqueIdSync());
-        });
+        return AAID.getAAID()
     }
 
     //  只有系统应用可以使用
@@ -644,21 +643,35 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         });
     }
 
-    // 此接口仅可在FA模型下使用
     isAirplaneModeSync(): boolean {
         let flag: boolean = false;
-        let data = settings.getValueSync(this.context, settings.general.AIRPLANE_MODE_STATUS, '1');
+        let data = settings.getValueSync(this.context, settings.general.AIRPLANE_MODE_STATUS, '0');
         if (data == "1") {
             flag = true;
         }
         return flag;
     }
 
-    isKeyboardConnected(): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            resolve(this.isKeyboardConnectedSync());
-        });
+    async isKeyboardConnected(): Promise<boolean> {
+        let isKeyboardConnected = false
+        let deviceList = await inputDevice.getDeviceList()
+        if (!!deviceList && deviceList.length > 0) {
+            for (let i = 0; i < deviceList.length; i++) {
+                inputDevice.getDeviceInfo(deviceList[i]).then((deviceData) => {
+                    if (!!deviceData && !!deviceData.sources) {
+                        let sourceTypes = deviceData.sources
+                        for (let j = 0; j < sourceTypes.length; j++) {
+                            if (sourceTypes[i] == "keyboard") {
+                                isKeyboardConnected = true
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        return isKeyboardConnected
     }
+
 
     isKeyboardConnectedSync(): boolean {
         let isKeyboardConnected = false
