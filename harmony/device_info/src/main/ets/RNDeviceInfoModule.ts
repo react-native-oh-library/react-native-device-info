@@ -44,6 +44,7 @@ import { inputDevice } from '@kit.InputKit';
 import power from '@ohos.power';
 import Logger from './Logger';
 import screenLock from '@ohos.screenLock';
+import { display } from '@kit.ArkUI'
 
 const abiList32 = ["armeabi", "win_x86", "win_arm"];
 const abiList64 = ["arm64 v8", "Intel x86-64h Haswell", "arm64-v8a", "armeabi-v7a", "win_x64"];
@@ -414,6 +415,11 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         return result;
     }
 
+    async getMacAddress():Promise<string> {
+        let linkInfo=await wifiManager.getLinkedInfo();
+        return linkInfo.macAddress
+    }
+
     getManufacturer(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             resolve(this.getManufacturerSync());
@@ -618,6 +624,18 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
 
     hasHmsSync(): boolean {
         return true;
+    }
+
+    async hasNotch(): Promise<boolean> {
+        let displayClass: display.Display = display.getDefaultDisplaySync();
+        if (!!!displayClass) {
+            return false
+        }
+        let result: display.CutoutInfo = await displayClass.getCutoutInfo();
+        if (result && result.boundingRects && result.boundingRects.length > 0) {
+            return true;
+        }
+        return false
     }
 
     isAirplaneMode(): Promise<boolean> {
