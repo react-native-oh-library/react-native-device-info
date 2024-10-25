@@ -46,6 +46,8 @@ import Logger from './Logger';
 import screenLock from '@ohos.screenLock';
 import { AAID } from '@kit.PushKit';
 import { display } from '@kit.ArkUI'
+import { asset } from '@kit.AssetStoreKit';
+import { util } from '@kit.ArkTS'
 
 const abiList32 = ["armeabi", "win_x86", "win_arm"];
 const abiList64 = ["arm64 v8", "Intel x86-64h Haswell", "arm64-v8a", "armeabi-v7a", "win_x64"];
@@ -563,8 +565,58 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         return deviceInfo.buildType;
     }
 
+    private  stringToArray(str: string): Uint8Array {
+        let textEncoder = new util.TextEncoder();
+        return textEncoder.encodeInto(str);
+    }
+
+    private arrayToString(arr: Uint8Array): string {
+        let textDecoder = util.TextDecoder.create("utf-8", { ignoreBOM: true });
+        let str = textDecoder.decodeWithStream(arr, { stream: false })
+        return str;
+    }
+
     getUniqueId(): Promise<string> {
-        return AAID.getAAID()
+        let query: asset.AssetMap = new Map();
+        query.set(asset.Tag.ALIAS, this.stringToArray('device_unique_id'));
+        query.set(asset.Tag.RETURN_TYPE, asset.ReturnType.ALL);
+        return new Promise<string>((resolve, reject) => {
+            try {
+                let res: Array<asset.AssetMap> = asset.querySync(query)
+                let secretStr: string = ""
+                for (let i = 0; i < res.length; i++) {
+                    let secret: Uint8Array = res[i].get(asset.Tag.SECRET) as Uint8Array;
+                    secretStr = this.arrayToString(secret);
+                }
+                return resolve(secretStr)
+            } catch (error) {
+                AAID.getAAID((err: BusinessError, data: string) => {
+                    if (err) {
+                        console.info('device_unique_id Failed to get AAID: %{public}d %{public}s' + JSON.stringify(err));
+                        reject(JSON.stringify(err))
+                    } else {
+                        let attr: asset.AssetMap = new Map();
+                        attr.set(asset.Tag.SECRET, this.stringToArray(data));
+                        attr.set(asset.Tag.ALIAS, this.stringToArray('device_unique_id'));
+                        attr.set(asset.Tag.ACCESSIBILITY, asset.Accessibility.DEVICE_FIRST_UNLOCKED);
+                        attr.set(asset.Tag.DATA_LABEL_NORMAL_1, this.stringToArray('demo_label'));
+                        attr.set(asset.Tag.IS_PERSISTENT, true);
+                        try {
+                            asset.add(attr).then(() => {
+                                return resolve(data)
+                            }).catch((err: BusinessError) => {
+                                console.error(`device_unique_id Failed to add Asset. Code is ${err.code}, message is ${err.message}`);
+                                reject(JSON.stringify(err))
+                            })
+                        } catch (error) {
+                            let err = error as BusinessError;
+                            console.error(`device_unique_id  Failed to add Asset. Code is ${err.code}, message is ${err.message}`);
+                            reject(JSON.stringify(err))
+                        }
+                    }
+                });
+            }
+        })
     }
 
     //  只有系统应用可以使用
