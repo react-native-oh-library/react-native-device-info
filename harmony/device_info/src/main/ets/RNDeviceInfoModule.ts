@@ -174,7 +174,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         try {
             let data = bundleManager.getBundleInfoForSelfSync(bundleFlags);
             if (data) {
-                result = data.versionCode.toString();
+                result = data.name;
             }
         } catch (err) {
             let message = (err as BusinessError).message;
