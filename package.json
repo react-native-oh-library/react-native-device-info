@@ -1,6 +1,6 @@
 {
   "name": "@react-native-oh-tpl/react-native-device-info",
-  "version": "11.1.0-0.0.3",
+  "version": "11.1.0-0.0.4",
   "description": "Get device information using react-native",
   "main": "src/RNDeviceInfo.ts",
   "files": [
@@ -16,11 +16,15 @@
     "jest.config.js",
     "jest.setup.ts"
   ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/react-native-device-info/react-native-device-info"
+    "url": "https://github.com/react-native-oh-library/react-native-device-info"
   },
-  "homepage": "https://github.com/react-native-device-info/react-native-device-info#readme",
+  "homepage": "https://github.com/react-native-oh-library/react-native-device-info#readme",
   "scripts": {
     "analyze": "yarn ts-check && yarn flow-check",
     "flow-check": "npx flow-bin check-contents < src/index.js.flow",
