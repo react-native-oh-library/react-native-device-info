@@ -1,6 +1,6 @@
 {
   "name": "@react-native-oh-tpl/react-native-device-info",
-  "version": "11.1.0-0.0.4",
+  "version": "11.1.0-0.0.5",
   "description": "Get device information using react-native",
   "main": "src/RNDeviceInfo.ts",
   "files": [
