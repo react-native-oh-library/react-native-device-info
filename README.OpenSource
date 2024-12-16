@@ -2,9 +2,9 @@
     {
         "Name": "react-native-device-info",
         "License": "MIT License",
-        "License File": "https://github.com/react-native-device-info/react-native-device-info/blob/master/LICENSE",
+        "License File": "LICENSE",
         "Version Number": "11.1.0",
-        "Owner" : "Rebecca Hughes <rebecca@learnium.net> (https://github.com/rebeccahughes)"
+        "Owner" : "xiafeng@huawei.com",
         "Upstream URL": "https://github.com/react-native-device-info/react-native-device-info",
         "Description": "RDevice Information for React Native."
     }
