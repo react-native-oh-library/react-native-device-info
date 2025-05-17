@@ -54,6 +54,8 @@ const abiList64 = ["arm64 v8", "Intel x86-64h Haswell", "arm64-v8a", "armeabi-v7
 
 export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.Spec {
     protected context: common.UIAbilityContext;
+    systemName: string = deviceInfo.distributionOSName.length === 0 ? 'OpenHarmony' : deviceInfo.distributionOSName;
+    systemVersion: string = deviceInfo.osFullName.slice(0, 3);
 
     constructor(protected ctx: TurboModuleContext) {
         super(ctx);
@@ -631,15 +633,14 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     }
 
     getUserAgentSync(): string {
-        let userAgent = '';
-        let controller = new web_webview.WebviewController();
-        try {
-            userAgent = controller.getUserAgent();
-        } catch (error) {
-            let e: BusinessError = error as BusinessError;
-            Logger.error(`getUserAgentSync ErrorCode: ${e.code},  Message: ${e.message}`);
-        }
-        return userAgent;
+        let deviceType: string = deviceInfo.deviceType.charAt(0).toUpperCase() + deviceInfo.deviceType.slice(1);
+        let OSName: string = this.systemName;
+        let OSVersion: string = this.systemVersion;
+        let ArkWebVersionCode: string = '4.1.6.1';
+        let Mobile: string = deviceType === 'Phone' ? 'Mobile' : '';
+        
+        return `Mozilla/5.0 (${deviceType}; ${OSName} ${OSVersion}) AppleWebKit/537.36 (KHTML, like Gecko) ` +
+          `Chrome/114.0.0.0 Safari/537.36 ArkWeb/${ArkWebVersionCode} ${Mobile}`;
     }
 
     getVersion(): string {
