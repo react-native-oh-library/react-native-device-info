@@ -47,7 +47,9 @@ import screenLock from '@ohos.screenLock';
 import { AAID } from '@kit.PushKit';
 import { display } from '@kit.ArkUI'
 import { asset } from '@kit.AssetStoreKit';
-import { util } from '@kit.ArkTS'
+import { util } from '@kit.ArkTS';
+
+Environment.envProp('fontScale', '');
 
 const abiList32 = ["armeabi", "win_x86", "win_arm"];
 const abiList64 = ["arm64 v8", "Intel x86-64h Haswell", "arm64-v8a", "armeabi-v7a", "win_x64"];
@@ -282,7 +284,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     }
 
     getFontScale(): Promise<number> {
-        Environment.envProp('fontScale', '');
         const fontScale: SubscribedAbstractProperty<number> = AppStorage.prop('fontScale');
         return new Promise<number>((resolve, reject) => {
             resolve(fontScale.get());
@@ -290,7 +291,6 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
     }
 
     getFontScaleSync(): number {
-        Environment.envProp('fontScale', '');
         const fontScale: SubscribedAbstractProperty<number> = AppStorage.prop('fontScale');
         return fontScale.get();
     }
