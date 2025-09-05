@@ -48,6 +48,8 @@ import { AAID } from '@kit.PushKit';
 import { display } from '@kit.ArkUI'
 import { asset } from '@kit.AssetStoreKit';
 import { util } from '@kit.ArkTS';
+import { distributedDeviceManager } from '@kit.DistributedServiceKit';
+import { abilityAccessCtrl } from '@kit.AbilityKit';
 
 Environment.envProp('fontScale', '');
 
@@ -228,8 +230,20 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         return deviceInfo.udid;
     }
 
-    getDeviceName(): Promise<string> {
-        return settings.getValue(this.context, settings.general.DEVICE_NAME);
+    async getDeviceName(): Promise<string> {
+        let dmInstance = distributedDeviceManager.createDeviceManager('com.harmony');
+        let atManager: abilityAccessCtrl.AtManager = abilityAccessCtrl.createAtManager();
+        const res = await atManager.requestPermissionsFromUser(this.context, ['ohos.permission.DISTRIBUTED_DATASYNC']);
+
+        if (res.authResults[0] === 0) {
+            return new Promise<string>((resolve, reject) => {
+                resolve(dmInstance.getLocalDeviceName());
+            });
+        } else {
+            return new Promise<string>((resolve, reject) => {
+                resolve('');
+            });
+        }
     }
 
     getDeviceNameSync(): string {
@@ -638,9 +652,9 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         let OSVersion: string = this.systemVersion;
         let ArkWebVersionCode: string = '4.1.6.1';
         let Mobile: string = deviceType === 'Phone' ? 'Mobile' : '';
-        
+
         return `Mozilla/5.0 (${deviceType}; ${OSName} ${OSVersion}) AppleWebKit/537.36 (KHTML, like Gecko) ` +
-          `Chrome/114.0.0.0 Safari/537.36 ArkWeb/${ArkWebVersionCode} ${Mobile}`;
+            `Chrome/114.0.0.0 Safari/537.36 ArkWeb/${ArkWebVersionCode} ${Mobile}`;
     }
 
     getVersion(): string {
