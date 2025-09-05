@@ -236,7 +236,9 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         const res = await atManager.requestPermissionsFromUser(this.context, ['ohos.permission.DISTRIBUTED_DATASYNC']);
 
         if (res.authResults[0] === 0) {
-            return dmInstance.getLocalDeviceName();
+            return new Promise<string>((resolve, reject) => {
+                resolve(dmInstance.getLocalDeviceName());
+            });
         } else {
             return new Promise<string>((resolve, reject) => {
                 resolve('');
