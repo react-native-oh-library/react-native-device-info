@@ -434,8 +434,8 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         return result;
     }
 
-    async getMacAddress():Promise<string> {
-        let linkInfo=await wifiManager.getLinkedInfo();
+    async getMacAddress(): Promise<string> {
+        let linkInfo = await wifiManager.getLinkedInfo();
         return linkInfo.macAddress
     }
 
@@ -471,7 +471,8 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         let lowPowerMode = false;
         try {
             let mode = power.getPowerMode();
-            if (mode == power.DevicePowerMode.MODE_POWER_SAVE || power.DevicePowerMode.MODE_EXTREME_POWER_SAVE) {
+            if (mode == power.DevicePowerMode.MODE_POWER_SAVE ||
+                mode == power.DevicePowerMode.MODE_EXTREME_POWER_SAVE) {
                 lowPowerMode = true;
             }
             Logger.info('power mode: ' + mode);
@@ -581,7 +582,7 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         return deviceInfo.buildType;
     }
 
-    private  stringToArray(str: string): Uint8Array {
+    private stringToArray(str: string): Uint8Array {
         let textEncoder = new util.TextEncoder();
         return textEncoder.encodeInto(str);
     }
@@ -608,7 +609,8 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
             } catch (error) {
                 AAID.getAAID((err: BusinessError, data: string) => {
                     if (err) {
-                        console.info('device_unique_id Failed to get AAID: %{public}d %{public}s' + JSON.stringify(err));
+                        console.info('device_unique_id Failed to get AAID: %{public}d %{public}s' +
+                        JSON.stringify(err));
                         reject(JSON.stringify(err))
                     } else {
                         let attr: asset.AssetMap = new Map();
@@ -857,9 +859,12 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         let data = audioRoutingManager.getDevicesSync(audio.DeviceFlag.OUTPUT_DEVICES_FLAG);
         if (!!data && data.length > 0) {
             for (let i = 0; i < data.length; i++) {
-                if (data[i].deviceType == audio.DeviceType.WIRED_HEADSET ||
-                    data[i].deviceType == audio.DeviceType.BLUETOOTH_A2DP) {
+                if (data[i].deviceType == audio.DeviceType.WIRED_HEADSET
+                    || data[i].deviceType == audio.DeviceType.WIRED_HEADPHONES
+                    || data[i].deviceType == audio.DeviceType.USB_HEADSET
+                    || data[i].deviceType == audio.DeviceType.BLUETOOTH_A2DP) {
                     isHeadphonesConnected = true
+                    break
                 }
             }
         }
@@ -879,8 +884,11 @@ export class RNDeviceInfoModule extends TurboModule implements TM.RNDeviceInfo.S
         let data = audioRoutingManager.getDevicesSync(audio.DeviceFlag.OUTPUT_DEVICES_FLAG);
         if (!!data && data.length > 0) {
             for (let i = 0; i < data.length; i++) {
-                if (data[i].deviceType == audio.DeviceType.WIRED_HEADSET) {
+                if (data[i].deviceType == audio.DeviceType.WIRED_HEADSET
+                    || data[i].deviceType == audio.DeviceType.WIRED_HEADPHONES
+                    || data[i].deviceType == audio.DeviceType.USB_HEADSET) {
                     isWiredHeadphonesConnected = true
+                    break
                 }
             }
         }
